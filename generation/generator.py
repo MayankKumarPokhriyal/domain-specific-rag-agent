@@ -2,8 +2,7 @@
 
 from typing import Iterable, List, Tuple
 
-from langchain.schema import Document
-
+from langchain_core.documents import Document
 from generation.llm_client import OllamaClient
 from retrieval.retriever import format_citations
 

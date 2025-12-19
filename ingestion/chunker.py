@@ -2,9 +2,8 @@
 
 from typing import Iterable, List
 
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
 
 def chunk_documents(
     documents: Iterable[Document],

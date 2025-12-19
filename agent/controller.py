@@ -3,8 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from langchain.schema import Document
-
+from langchain_core.documents import Document
 from retrieval.retriever import VectorRetriever
 from utils.logging import get_logger
 
