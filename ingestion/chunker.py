@@ -1,4 +1,5 @@
-"""Chunking utilities for documents."""
+"""Chunking utilities for source documents."""
+
 from typing import Iterable, List
 
 from langchain.schema import Document
@@ -11,16 +12,29 @@ def chunk_documents(
     chunk_size: int,
     chunk_overlap: int,
 ) -> List[Document]:
-    """Split documents into overlapping chunks with metadata preserved."""
+    """
+    Split documents into overlapping chunks while preserving metadata.
 
+    Each chunk receives a unique `chunk_id` used later for citations.
+    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         length_function=len,
         add_start_index=True,
     )
+
     chunked_docs: List[Document] = []
-    for idx, chunk in enumerate(splitter.split_documents(list(documents))):
-        chunk.metadata["chunk_id"] = idx
+    chunk_counter = 0
+
+    for chunk in splitter.split_documents(list(documents)):
+        # Ensure metadata exists
+        if chunk.metadata is None:
+            chunk.metadata = {}
+
+        chunk.metadata["chunk_id"] = chunk_counter
+        chunk_counter += 1
+
         chunked_docs.append(chunk)
+
     return chunked_docs

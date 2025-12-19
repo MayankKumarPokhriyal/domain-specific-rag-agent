@@ -1,23 +1,37 @@
 """Lightweight tests for agent decision logic."""
+
 from agent.controller import AgentController, AgentDecision
-from retrieval.retriever import VectorRetriever
 
 
-class DummyRetriever(VectorRetriever):
-    def __init__(self) -> None:  # type: ignore[no-untyped-def]
-        pass
+class DummyRetriever:
+    """Minimal retriever stub for agent tests."""
 
-    def retrieve(self, query: str):  # type: ignore[override]
+    def retrieve(self, query: str):
         return []
+
+
+def test_empty_query():
+    agent = AgentController(DummyRetriever())
+    decision = agent.decide("")
+    assert decision == AgentDecision(
+        require_retrieval=False,
+        reason="Empty or whitespace-only query",
+    )
 
 
 def test_small_talk_detection():
     agent = AgentController(DummyRetriever())
-    decision = agent.decide("hello there")
-    assert decision == AgentDecision(require_retrieval=False, reason="Small talk")
+    decision = agent.decide("hello")
+    assert decision == AgentDecision(
+        require_retrieval=False,
+        reason="Conversational or small-talk query",
+    )
 
 
 def test_information_query():
     agent = AgentController(DummyRetriever())
     decision = agent.decide("Explain the theory of relativity")
-    assert decision.require_retrieval is True
+    assert decision == AgentDecision(
+        require_retrieval=True,
+        reason="Document-grounded information request",
+    )
