@@ -2,9 +2,12 @@
 
 Uses environment variables for overrides; keeps sensible local defaults for dev.
 """
+
 from functools import lru_cache
 from pathlib import Path
-from pydantic import BaseSettings, Field
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +24,14 @@ class AppSettings(BaseSettings):
     chunk_size: int = Field(default=800)
     chunk_overlap: int = Field(default=120)
 
-    embedding_model_name: str = Field(default="sentence-transformers/all-MiniLM-L6-v2")
+    embedding_model_name: str = Field(
+        default="sentence-transformers/all-MiniLM-L6-v2"
+    )
     embedding_batch_size: int = Field(default=16)
 
-    ollama_api_url: str = Field(default="http://localhost:11434/api/generate")
+    ollama_api_url: str = Field(
+        default="http://localhost:11434/api/generate"
+    )
     ollama_model: str = Field(default="llama3")
     ollama_temperature: float = Field(default=0.1)
     ollama_max_tokens: int = Field(default=512)
@@ -41,5 +48,4 @@ class AppSettings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> AppSettings:
     """Return a cached settings instance."""
-
     return AppSettings()
