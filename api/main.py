@@ -3,6 +3,9 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from fastapi import UploadFile, File
+import shutil
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -65,6 +68,29 @@ def ingest(payload: IngestRequest) -> Dict[str, Any]:
     index_path = build_and_persist_index(data_dir)
     return {"index_path": str(index_path)}
 
+@app.post("/ingest/upload")
+async def ingest_upload(file: UploadFile = File(...)) -> Dict[str, Any]:
+    """
+    Upload a PDF file in real time and trigger ingestion.
+    """
+    data_dir = Path("data")
+    data_dir.mkdir(exist_ok=True)
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+
+    file_path = data_dir / file.filename
+
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    index_path = build_and_persist_index(data_dir)
+
+    return {
+        "status": "success",
+        "uploaded_file": file.filename,
+        "index_path": str(index_path),
+    }
 
 @app.post("/query")
 def query(payload: QueryRequest) -> Dict[str, Any]:
@@ -92,3 +118,4 @@ def query(payload: QueryRequest) -> Dict[str, Any]:
         doc.metadata.get("source", "unknown") for doc, _score in retrieved
     ]
     return {"answer": answer, "citations": citations, "reason": decision.reason}
+
