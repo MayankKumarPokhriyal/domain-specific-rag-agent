@@ -18,8 +18,15 @@ if st.button("Ingest Documents"):
     if uploaded_files:
         for file in uploaded_files:
             files = {"file": (file.name, file, "application/pdf")}
-            requests.post(f"{API_URL}/ingest", files=files)
-        st.success("Documents ingested successfully")
+            response = requests.post(
+                f"{API_URL}/ingest/upload",
+                files=files
+            )
+            if response.status_code != 200:
+                st.error(response.text)
+                break
+        else:
+            st.success("Documents ingested successfully")
     else:
         st.warning("Please upload at least one PDF")
 
@@ -33,7 +40,10 @@ if st.button("Submit Query"):
             f"{API_URL}/query",
             json={"query": query}
         )
-        st.subheader("Answer")
-        st.write(response.json().get("answer", "No response"))
+        if response.status_code == 200:
+            st.subheader("Answer")
+            st.write(response.json().get("answer", "No response"))
+        else:
+            st.error(response.text)
     else:
         st.warning("Please enter a question")
